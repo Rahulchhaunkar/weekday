@@ -13,8 +13,8 @@ const ApplyButton = ({
       variant={variant}
       type={type}
       sx={{
+        backgroundColor:"#0ae6b8",
         textTransform: "none",
-        minWidth: 250,
         "&:hover": {
           cursor: "pointer",
         },

@@ -14,7 +14,7 @@ const ReferButton = ({
       type={type}
       sx={{
         textTransform: "none",
-        minWidth: 250,
+        backgroundColor: "#5f0ae6",
         "&:hover": {
           cursor: "pointer",
         },

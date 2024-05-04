@@ -13,7 +13,6 @@ const jobsApi = createApi({
     return {
       fetchJobs: builder.mutation({
         query: (body) => {
-          console.log("body", body);
           return {
             method: "POST",
             url: "getSampleJdJSON",
