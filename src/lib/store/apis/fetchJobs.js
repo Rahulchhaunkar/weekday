@@ -13,10 +13,21 @@ const jobsApi = createApi({
     return {
       fetchJobs: builder.mutation({
         query: (body) => {
+          console.log("body", body);
           return {
             method: "POST",
             url: "getSampleJdJSON",
             body,
+            serializeQueryArgs: ({ endpointName }) => {
+              return endpointName;
+            },
+            merge: (currentCache, newItems) => {
+              currentCache.results.push(...newItems.results);
+            },
+            // Refetch when the page arg changes
+            forceRefetch({ currentArg, previousArg }) {
+              return currentArg !== previousArg;
+            },
           };
         },
       }),

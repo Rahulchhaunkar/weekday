@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useFetchJobsMutation } from "../../../lib/store";
 import PaperComponent from "../../../components/paperComponent";
 import { Grid, Stack } from "@mui/material";
@@ -6,23 +6,19 @@ import { CompanyDescriptionComponent, CompanyHeaderComponent } from "../../../co
 
 
 const FilterScreen = () => {
-  const [page, setPage] = useState(0);
-  const body =({
-    "limit": 10,
-    "offset": 0
-  });
-  const [fetchJobs,{data:jobData,isLoading,isError,isSuccess}]=useFetchJobsMutation(body);
+  const [limit, setLimit] = useState(10);
+  const [fetchJobs,{data:jobData,isFetching}]=useFetchJobsMutation();
 
   useEffect(()=>{
-    fetchJobs()
-  },[fetchJobs])
+    fetchJobs({ "limit": limit ,
+    "offset": 0})
+  },[fetchJobs,limit])
   useEffect(() => {
     const onScroll = () => {
       const scrolledToBottom =
         window.innerHeight + window.scrollY >= document.body.offsetHeight;
-      if (scrolledToBottom && !isFetching) {
-        console.log("Fetching more data...");
-        setPage(page + 1);
+      if (scrolledToBottom && !isFetching && jobData?.jdList?.length !== jobData?.totalCount ) {
+        setLimit(limit + 10);
       }
     };
 
@@ -31,7 +27,7 @@ const FilterScreen = () => {
     return function () {
       document.removeEventListener("scroll", onScroll);
     };
-  }, [page, isFetching]);
+  }, [limit, isFetching,jobData?.jdList,jobData?.totalCount]);
 
 
 
