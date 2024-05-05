@@ -11,9 +11,43 @@ import FilterComponent from "../header";
 
 const FilterScreen = () => {
   const [limit, setLimit] = useState(10);
-  const [scrollPosition, setScrollPosition] = useState(0);
   const [fetchJobs, { data: jobData, isFetching }] = useFetchJobsMutation();
+  const [filters, setFilters] = useState({
+    role: "",
+    employeeCount: 0,
+    experience: 0,
+    remote: false,
+    minSalary: 0,
+    companyName: "",
+  });
 
+  const handleFieldChange = (e) => {
+    setFilters((prevData) => ({
+      ...prevData,
+      [e.target.name]: e.target.value,
+    }));
+  };
+  const resetFilters = () => {
+    setFilters({
+      role: "",
+      employeeCount: 0,
+      experience: 0,
+      remote: false,
+      minSalary: 0,
+      companyName: "",
+    });
+  };
+  const filteredData = jobData?.jdList?.filter((item) => {
+    return (
+      (!filters.role || item?.jobRole === filters?.role) &&
+      (!filters.employeeCount ||
+        item.employeeCount === filters.employeeCount) &&
+      (!filters.experience || item.minExp === filters.experience) &&
+      (!filters.remote || item.remote === filters.remote) &&
+      (!filters.minSalary || item.salary >= filters.minSalary) &&
+      (!filters.companyName || item.companyName === filters.companyName)
+    );
+  });
   useEffect(() => {
     fetchJobs({ limit: limit, offset: 0 });
   }, [fetchJobs, limit]);
@@ -26,21 +60,34 @@ const FilterScreen = () => {
         setLimit(limit + 10);
       }
     };
-
     document.addEventListener("scroll", onScroll);
-
     return function () {
       document.removeEventListener("scroll", onScroll);
     };
   }, [limit, isFetching, jobData?.jdList, jobData?.totalCount]);
-  useEffect(() => {
-    window.scrollTo(0, scrollPosition);
-  }, [scrollPosition, limit]);
+
+  useEffect(() => {}, [
+    filters?.role,
+    filters?.employeeCount,
+    filters?.experience,
+    filters?.remote,
+    filters?.minSalary,
+    filters?.companyName,
+  ]);
   return (
     <>
-      <FilterComponent />
+      <FilterComponent
+        reset={resetFilters}
+        role={filters?.role}
+        remote={filters?.remote}
+        minSalary={filters?.minSalary}
+        experience={filters?.experience}
+        companyName={filters?.companyName}
+        handleFieldChange={handleFieldChange}
+        employeeCount={filters?.employeeCount}
+      />
       <Grid container spacing={2}>
-        {jobData?.jdList.map((data) => (
+        {filteredData?.map((data) => (
           <Grid key={data?.jdUid} item xs={12} sm={6} md={6} lg={4}>
             <PaperComponent>
               <CompanyHeaderComponent
