@@ -56,7 +56,6 @@ const FilterScreen = () => {
       const scrolledToBottom =
         window.innerHeight + window.scrollY >= document.body.offsetHeight;
       if (scrolledToBottom && !isFetching) {
-        setScrollPosition(window.scrollY);
         setLimit(limit + 10);
       }
     };
