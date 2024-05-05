@@ -6,12 +6,16 @@ import {
   CompanyDescriptionComponent,
   CompanyFooterComponent,
   CompanyHeaderComponent,
+  LoaderComponent,
 } from "../../../components";
 import FilterComponent from "../header";
 
 const FilterScreen = () => {
+  const [items, setItems] = useState([]);
+  const [offset, setOffset] = useState(0);
   const [limit, setLimit] = useState(10);
-  const [fetchJobs, { data: jobData, isFetching }] = useFetchJobsMutation();
+  const [fetchJobs, { data: jobData, isFetching, isLoading }] =
+    useFetchJobsMutation();
   const [filters, setFilters] = useState({
     role: "",
     employeeCount: 0,
@@ -20,13 +24,15 @@ const FilterScreen = () => {
     minSalary: 0,
     companyName: "",
   });
-
+  //Filter Change Handler
   const handleFieldChange = (e) => {
     setFilters((prevData) => ({
       ...prevData,
       [e.target.name]: e.target.value,
     }));
   };
+
+  //Filter Reset Handler
   const resetFilters = () => {
     setFilters({
       role: "",
@@ -37,7 +43,7 @@ const FilterScreen = () => {
       companyName: "",
     });
   };
-  const filteredData = jobData?.jdList?.filter((item) => {
+  const filteredData = items?.filter((item) => {
     return (
       (!filters.role || item?.jobRole === filters?.role) &&
       (!filters.employeeCount ||
@@ -48,33 +54,34 @@ const FilterScreen = () => {
       (!filters.companyName || item.companyName === filters.companyName)
     );
   });
+  const fetchData = async () => {
+    const response = await fetchJobs({ offset: offset, limit: 10 });
+    console.log(response);
+    setItems((prevItems) => [...prevItems, ...response.data.jdList]);
+  };
   useEffect(() => {
-    fetchJobs({ limit: limit, offset: 0 });
-  }, [fetchJobs, limit]);
-  useEffect(() => {
-    const onScroll = () => {
-      const scrolledToBottom =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight;
-      if (scrolledToBottom && !isFetching) {
-        setLimit(limit + 10);
-      }
-    };
-    document.addEventListener("scroll", onScroll);
-    return function () {
-      document.removeEventListener("scroll", onScroll);
-    };
-  }, [limit, isFetching, jobData?.jdList, jobData?.totalCount]);
+    fetchData();
+  }, [offset]);
 
-  useEffect(() => {}, [
-    filters?.role,
-    filters?.employeeCount,
-    filters?.experience,
-    filters?.remote,
-    filters?.minSalary,
-    filters?.companyName,
-  ]);
+  useEffect(() => {
+    if (items.length > 0) {
+      const handleScroll = () => {
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+          // Fetch more data when user reaches the bottom
+          setOffset((prevOffset) => prevOffset + 10);
+        }
+      };
+
+      window.addEventListener("scroll", handleScroll);
+
+      return () => {
+        window.removeEventListener("scroll", handleScroll);
+      };
+    }
+  }, [items]);
   return (
     <>
+      <LoaderComponent open={isFetching || isLoading} />
       <FilterComponent
         reset={resetFilters}
         role={filters?.role}
